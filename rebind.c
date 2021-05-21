@@ -17,7 +17,7 @@
  *     program
  */
 
-//#define DO_DEBUG 1
+#define DO_DEBUG 1
 
 #include <stdio.h>
 #include <stdlib.h>

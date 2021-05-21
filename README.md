@@ -94,14 +94,14 @@ These are not necessary for the basic operation.
   websocket connections and, if you use `--web-auth`, also for normal
   web requests. This functionality is activated with the
   `--auth-plugin CLASS` and `--auth-source ARG` options, where CLASS is
-  usually one from auth_plugins.py and ARG is the plugin's configuration.
+  usually one from `auth_plugins.py` and ARG is the plugin's configuration.
 
 * Token plugins: a single instance of websockify can connect clients to
   multiple different pre-configured targets, depending on the token sent
   by the client using the `token` URL parameter, or the hostname used to
   reach websockify, if you use `--host-token`. This functionality is
   activated with the `--token-plugin CLASS` and `--token-source ARG`
-  options, where CLASS is usually one from token_plugins.py and ARG is
+  options, where CLASS is usually one from `token_plugins.py` and ARG is
   the plugin's configuration.
 
 ### Other implementations of websockify
@@ -125,16 +125,18 @@ In addition to proxying from a source address to a target address
 launch a program on the local system and proxy WebSockets traffic to
 a normal TCP port owned/bound by the program.
 
-This is accomplished by the LD_PRELOAD library (`rebind.so`)
+This is accomplished by the `LD_PRELOAD` library (`rebind.so`)
 which intercepts bind() system calls by the program. The specified
 port is moved to a new localhost/loopback free high port. websockify
 then proxies WebSockets traffic directed to the original port to the
-new (moved) port of the program.
+new (moved) port of the program.  Alternatively, use the option
+`--rebind-port` to tell websockify which port to rebind; websockify
+itself will listen on the target port given as its first argument.
 
 The program wrap mode is invoked by replacing the target with `--`
 followed by the program command line to wrap.
 
-    `./run 2023 -- PROGRAM ARGS`
+    ./run 2023 -- PROGRAM ARGS
 
 The `--wrap-mode` option can be used to indicate what action to take
 when the wrapped program exits or daemonizes.
@@ -143,13 +145,18 @@ Here is an example of using websockify to wrap the vncserver command
 (which backgrounds itself) for use with
 [noVNC](https://github.com/novnc/noVNC):
 
-    `./run 5901 --wrap-mode=ignore -- vncserver -geometry 1024x768 :1`
+    ./run 5901 --wrap-mode=ignore -- vncserver -geometry 1024x768 :1
+
+Another example with the same vncserver command, but with websockify
+listening on a different target port (6080):
+
+    ./run 6080 --rebind-port 5901 --wrap-mode=ignore -- vncserver -geometry 1024x768 :1
 
 Here is an example of wrapping telnetd (from krb5-telnetd). telnetd
 exits after the connection closes so the wrap mode is set to respawn
 the command:
 
-    `sudo ./run 2023 --wrap-mode=respawn -- telnetd -debug 2023`
+    sudo ./run 2023 --wrap-mode=respawn -- telnetd -debug 2023
 
 The `wstelnet.html` page in the [websockify-js](https://github.com/novnc/websockify-js)
 project demonstrates a simple WebSockets based telnet client (use

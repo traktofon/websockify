@@ -267,6 +267,7 @@ class WebSocketProxy(websockifyserver.WebSockifyServer):
         self.target_port    = kwargs.pop('target_port', None)
         self.wrap_cmd       = kwargs.pop('wrap_cmd', None)
         self.wrap_mode      = kwargs.pop('wrap_mode', None)
+        self.rebind_port    = kwargs.pop('rebind_port', None)
         self.unix_target    = kwargs.pop('unix_target', None)
         self.ssl_target     = kwargs.pop('ssl_target', None)
         self.heartbeat      = kwargs.pop('heartbeat', None)
@@ -274,6 +275,9 @@ class WebSocketProxy(websockifyserver.WebSockifyServer):
         self.token_plugin = kwargs.pop('token_plugin', None)
         self.host_token = kwargs.pop('host_token', None)
         self.auth_plugin = kwargs.pop('auth_plugin', None)
+
+        if self.rebind_port is None:
+            self.rebind_port = kwargs['listen_port']
 
         # Last 3 timestamps command was run
         self.wrap_times    = [0, 0, 0]
@@ -305,7 +309,7 @@ class WebSocketProxy(websockifyserver.WebSockifyServer):
 
             os.environ.update({
                 "LD_PRELOAD": self.rebinder,
-                "REBIND_OLD_PORT": str(kwargs['listen_port']),
+                "REBIND_OLD_PORT": str(self.rebind_port),
                 "REBIND_NEW_PORT": str(self.target_port)})
 
         super().__init__(RequestHandlerClass, *args, **kwargs)
@@ -479,6 +483,8 @@ def websockify_init():
             choices=["exit", "ignore", "respawn"],
             help="action to take when the wrapped program exits "
             "or daemonizes: exit (default), ignore, respawn")
+    parser.add_option("--rebind-port", default=None,
+            help="port of the wrapped program to rebind")
     parser.add_option("--prefer-ipv6", "-6",
             action="store_true", dest="source_is_ipv6",
             help="prefer IPv6 when resolving source_addr")
